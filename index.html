@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Diwali!</title>
+  <style>
+    /* General styling */
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin: auto;
+    }
+
+    #showPhotosBtn {
+      margin: 20px;
+      padding: 12px 24px;
+      font-size: 18px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(45deg, #ffcc00, #ff6600);
+      color: #000;
+      font-weight: bold;
+      box-shadow: 0 0 15px rgba(255, 165, 0, 0.6);
+      transition: transform 0.2s;
+    }
+
+    #showPhotosBtn:hover {
+      transform: scale(1.1);
+    }
+
+    #photos {
+      display: none;
+      margin-top: 20px;
+    }
+
+    /* 🎆 Wish text animation */
+    .wishText {
+      font-size: 3rem;
+      margin: 20px 0;
+      opacity: 0;
+      transform: scale(0.5) translateY(50px);
+      animation: jumpOnce 1.2s ease-out forwards;
+    }
+
+    @keyframes jumpOnce {
+      0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(50px);
+      }
+      60% {
+        opacity: 1;
+        transform: scale(1.2) translateY(-20px);
+      }
+      80% {
+        transform: scale(0.9) translateY(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* 💖 Romantic text styling */
+    .Text {
+      animation: fadeIn 2s ease-in forwards;
+      opacity: 0;
+      max-width: 700px;
+      margin: 30px auto;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 204, 0, 0.6);
+      border-radius: 20px;
+      padding: 25px 30px;
+      box-shadow: 0 0 20px rgba(255, 102, 0, 0.4);
+      backdrop-filter: blur(6px);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .Text p {
+      font-size: 1.2rem;
+      line-height: 1.8;
+      text-align: center;
+      color: #fff;
+      margin: 0;
+      font-weight: 500;
+      text-shadow: 0 0 10px rgba(255, 153, 102, 0.4);
+    }
+
+    /* Glow for festive touch */
+    .glow {
+      text-shadow: 0 0 10px #ffcc00, 0 0 20px #ff6600, 0 0 40px #ff3300;
+    }
+
+    /* Fade-in for video */
+    .fadeInVideo {
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="fireworksCanvas"></canvas>
+
+  <div id="content">
+    <div class="wishText glow">Happy Diwali!! My Chikudii! 💖</div>
+    <button id="showPhotosBtn">Click & see surprise</button>
+
+    <div id="photos">
+      <div class="Text">
+        <p>
+          Wishing you brightness & joy this Diwali and always be happy. 💖  
+          You are the best!! Na tumsa koi hai aur na kabhi aayega!!  
+          Because teri baat hi alag hai yaar!! 😘  
+          Haan, kabhi kabhi tujhe irritate karta hu... bas isliye kyunki <b>I love you yaar!</b> 💞  
+          Tu meri bestie hai — to masti bhi tujhse hi karu na!  
+          Is Diwali, bas khush rehna, hasi khushi me jiyo, aur full jalsa kar dear!!  
+          Tu jab hasti hai na... duniya roshan lagti hai! 🌟  
+          Tu jab upset hoti hai, to mera mann bilkul nahi lagta  
+          You are my happiness, my smile, my peace 💫  
+          Agar hamari dosti na hoti, shayad wo asli wali smile mujhe kabhi nahi milti.  
+          Life hai — kabhi khushi, kabhi gum, par main hamesha tere saath hu dear 💖  
+          Tujhe kuch bhi ho, bas yaad rakh — tera pagal dost hamesha tere saath hai 💫  
+          Hasna, khelna aur khush rehna — kyunki aaj ke moments kal beautiful memories banenge ✨  
+          Aur yaad rakh — tu meri life ka sabse special part hai 💖
+        </p>
+      </div>
+      <button id="showPhotosBtn" onclick="myvideo1()">Click Here for Surprise!!</button>
+    </div>
+  </div>
+
+  <script>
+    // === Fireworks Effect ===
+    const canvas = document.getElementById('fireworksCanvas');
+    const ctx = canvas.getContext('2d');
+    let cw = canvas.width = window.innerWidth;
+    let ch = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      cw = canvas.width = window.innerWidth;
+      ch = canvas.height = window.innerHeight;
+    });
+
+    const fireworks = [];
+    const particles = [];
+
+    class Firework {
+      constructor(x, y, targetY) {
+        this.x = x;
+        this.y = y;
+        this.targetY = targetY;
+        this.speed = 2 + Math.random() * 2;
+        this.trail = [];
+        this.done = false;
+      }
+      update() {
+        this.trail.push({ x: this.x, y: this.y });
+        if (this.trail.length > 5) this.trail.shift();
+        this.y -= this.speed;
+        if (this.y <= this.targetY) {
+          this.explode();
+          this.done = true;
+        }
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, this.y + 10);
+        ctx.strokeStyle = 'hsl(' + Math.random() * 360 + ',100%,50%)';
+        ctx.stroke();
+      }
+      explode() {
+        const count = 30 + Math.floor(Math.random() * 30);
+        for (let i = 0; i < count; i++) {
+          particles.push(new Particle(this.x, this.y));
+        }
+      }
+    }
+
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.speedX = Math.random() * 6 - 3;
+        this.speedY = Math.random() * 6 - 3;
+        this.alpha = 1;
+        this.decay = 0.02 + Math.random() * 0.02;
+        this.color = 'hsl(' + Math.random() * 360 + ',100%,50%)';
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.speedY += 0.05; // gravity
+        this.alpha -= this.decay;
+      }
+      draw() {
+        if (this.alpha <= 0) return;
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    function loop() {
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.fillRect(0, 0, cw, ch);
+      if (Math.random() < 0.05) {
+        fireworks.push(new Firework(Math.random() * cw, ch, ch * 0.3 + Math.random() * ch * 0.5));
+      }
+      for (let i = fireworks.length - 1; i >= 0; i--) {
+        fireworks[i].update();
+        fireworks[i].draw();
+        if (fireworks[i].done) fireworks.splice(i, 1);
+      }
+      for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        particles[i].draw();
+        if (particles[i].alpha <= 0) particles.splice(i, 1);
+      }
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    // === Button click logic ===
+    document.getElementById('showPhotosBtn').addEventListener('click', () => {
+      const photos = document.getElementById('photos');
+      photos.style.display = 'block';
+      document.getElementById('showPhotosBtn').style.display = 'none';
+    });
+
+    function myvideo1() {
+      // Create video element dynamically
+      const video = document.createElement('video');
+      video.src = 'diwali.mp4';
+      video.controls = true;
+      video.autoplay = true;
+      video.classList.add('fadeInVideo');
+      video.style.width = '25%';
+      video.style.borderRadius = '15px';
+      video.style.marginTop = '20px';
+      video.style.boxShadow = '0 0 20px orange';
+
+      // Add video to page
+      document.body.innerHTML = '';
+      document.body.style.display = 'flex';
+      document.body.style.flexDirection = 'column';
+      document.body.style.alignItems = 'center';
+      document.body.style.justifyContent = 'center';
+      document.body.style.background = '#000';
+      document.body.appendChild(video);
+
+      // Delay fade in
+      setTimeout(() => { video.style.opacity = '1'; }, 100);
+
+      // Create "Next Video" button (hidden initially)
+      const nextBtn = document.createElement('button');
+      nextBtn.textContent = 'Click for Next Surprise 🎁';
+      nextBtn.style.display = 'none';
+      nextBtn.style.marginTop = '20px';
+      nextBtn.style.padding = '12px 24px';
+      nextBtn.style.fontSize = '18px';
+      nextBtn.style.border = 'none';
+      nextBtn.style.borderRadius = '8px';
+      nextBtn.style.background = 'linear-gradient(45deg, #ffcc00, #ff6600)';
+      nextBtn.style.color = '#000';
+      nextBtn.style.fontWeight = 'bold';
+      nextBtn.style.cursor = 'pointer';
+      nextBtn.style.boxShadow = '0 0 15px rgba(255, 165, 0, 0.6)';
+
+      document.body.appendChild(nextBtn);
+
+      // When video ends → show next button
+      video.addEventListener('ended', () => {
+        nextBtn.style.display = 'inline-block';
+      });
+
+      // When next button clicked → go to next video
+      nextBtn.addEventListener('click', () => {
+        document.body.innerHTML = '';
+        document.body.style.display = 'flex';
+        document.body.style.flexDirection = 'column';
+        document.body.style.alignItems = 'center';
+        document.body.style.justifyContent = 'center';
+        document.body.style.background = '#000';
+
+        const video2 = document.createElement('video');
+        video2.src = 'chiku.mp4';
+        video2.controls = true;
+        video2.autoplay = true;
+        video2.classList.add('fadeInVideo');
+        video2.style.width = '25%';
+        video2.style.borderRadius = '15px';
+        video2.style.marginTop = '20px';
+        video2.style.boxShadow = '0 0 20px orange';
+        document.body.appendChild(video2);
+
+        setTimeout(() => { video2.style.opacity = '1'; }, 100);
+
+        const nextBtn2 = document.createElement('button');
+        nextBtn2.textContent = 'Click for Next🎁';
+        nextBtn2.style.display = 'none';
+        nextBtn2.style.marginTop = '20px';
+        nextBtn2.style.padding = '12px 24px';
+        nextBtn2.style.fontSize = '18px';
+        nextBtn2.style.border = 'none';
+        nextBtn2.style.borderRadius = '8px';
+        nextBtn2.style.background = 'linear-gradient(45deg, #ffcc00, #ff6600)';
+        nextBtn2.style.color = '#000';
+        nextBtn2.style.fontWeight = 'bold';
+        nextBtn2.style.cursor = 'pointer';
+        nextBtn2.style.boxShadow = '0 0 15px rgba(255, 165, 0, 0.6)';
+        document.body.appendChild(nextBtn2);
+
+        video2.addEventListener('ended', () => {
+          nextBtn2.style.display = 'inline-block';
+        });
+
+        nextBtn2.addEventListener('click', () => {
+          window.location.href = 'end.html';
+        });
+
+      });
+    }
+  </script>
+
+</body>
+</html>
